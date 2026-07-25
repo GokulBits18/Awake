@@ -1,4 +1,4 @@
-# 🏢 Awake - Enterprise Vision System
+# Awake - Enterprise Vision System
 
 Awake is an AI-powered, real-time posture and alertness tracking system designed for enterprise network environments. It monitors employee ergonomics and wakefulness using advanced computer vision, routing analytics to a secure, centralized HR dashboard.
 
