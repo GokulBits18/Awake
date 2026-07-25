@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Admin Portal</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #000000; color: #fbfbfb; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background-color: #000000; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-align: center; width: 350px;}
+        h1 { margin-top: 0; font-size: 24px; color: #001eff; }
+        
+        input { box-sizing: border-box; width: 100%; padding: 12px; margin: 10px 0; border-radius: 6px; border: 1px solid #000000; background: #000008; color: white; font-size: 16px; text-align: center;}
+        button { background-color: #0008ff; color: #000000; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 10px;}
+        button:hover { background-color: #ff0000; }
+        .error-msg { color: #fd0202; font-size: 14px; margin-top: 10px; display: none; }
+
+        .dataset-container { background-color: #000000; padding: 20px; border-radius: 12px; width: 90%; max-width: 900px; display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3);}
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
+        th, td { padding: 12px; border-bottom: 1px solid #000000; }
+        th { color: #ff0000; font-weight: bold; }
+        tr:hover { background-color: rgba(0, 0, 0, 0.05); }
+    </style>
+</head>
+<body>
+
+    <!-- HR LOGIN -->
+    <div class="card" id="authContainer">
+        <h1>HR Secure Portal</h1>
+        <p style="color: #fbfcfc; font-size: 14px;">Enter the Master Admin Password to view company data.</p>
+        <input type="password" id="passwordInput" placeholder="Admin Password">
+        <div id="errorText" class="error-msg"></div>
+        <button onclick="adminLogin()">Access Dataset</button>
+    </div>
+
+    <!-- HR DATASET TABLE -->
+    <div class="dataset-container" id="datasetContainer">
+        <h2 style="margin-top:0; color:#000dff; font-size:22px; text-align: center;">Live Company Roster</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Employee Name</th>
+                    <th>Posture Status</th>
+                    <th>Healthy?</th>
+                    <th>Total Earnings (₹)</th>
+                    <th>Healthy (sec)</th>
+                    <th>Sleep (sec)</th>
+                </tr>
+            </thead>
+            <tbody id="datasetTableBody">
+                <!-- Data will populate here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function showError(msg) {
+            const errorEl = document.getElementById("errorText");
+            errorEl.innerText = msg;
+            errorEl.style.display = "block";
+        }
+
+        async function adminLogin() {
+            const password = document.getElementById("passwordInput").value;
+            if (!password) return showError("Enter the admin password.");
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/api/admin/login", {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ password: password })
+                });
+                const data = await response.json();
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    document.getElementById("authContainer").style.display = "none";
+                    document.getElementById("datasetContainer").style.display = "block";
+                    startTrackingTable();
+                }
+            } catch (error) { showError("Server is not running."); }
+        }
+
+        function startTrackingTable() {
+            setInterval(async () => {
+                try {
+                    const tableRes = await fetch("http://127.0.0.1:8000/api/dataset");
+                    const tableData = await tableRes.json();
+                    
+                    let rowsHtml = "";
+                    tableData.forEach(row => {
+                        // Color code the status
+                        let statusColor = row.current_posture === "HEALTHY" ? "#a6e3a1" : (row.current_posture === "LAZY" ? "#f9e2af" : "#f38ba8");
+                        
+                        rowsHtml += `
+                            <tr>
+                                <td>${row.id}</td>
+                                <td style="font-weight: bold;">${row.name}</td>
+                                <td style="color: ${statusColor}; font-weight: bold;">${row.current_posture}</td>
+                                <td>${row.is_healthy}</td>
+                                <td>₹${row.bonus_earnings.toFixed(2)}</td>
+                                <td>${row.healthy_time}</td>
+                                <td>${row.sleep_time}</td>
+                            </tr>
+                        `;
+                    });
+                    document.getElementById("datasetTableBody").innerHTML = rowsHtml;
+                } catch (error) {}
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
