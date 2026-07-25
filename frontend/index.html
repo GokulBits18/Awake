@@ -65,7 +65,8 @@
             if (!password) return showError("Enter the admin password.");
 
             try {
-                const response = await fetch("http://127.0.0.1:8000/api/admin/login", {
+                // Fetch call updated to point to the live Vercel backend
+                const response = await fetch("https://awake-iatj.vercel.app/api/admin/login", {
                     method: "POST", headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ password: password })
                 });
@@ -83,7 +84,8 @@
         function startTrackingTable() {
             setInterval(async () => {
                 try {
-                    const tableRes = await fetch("http://127.0.0.1:8000/api/dataset");
+                    // Fetch call updated to point to the live Vercel backend
+                    const tableRes = await fetch("https://YOUR_BACKEND_URL.vercel.app/api/dataset");
                     const tableData = await tableRes.json();
                     
                     let rowsHtml = "";
