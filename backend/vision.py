@@ -70,7 +70,7 @@ def send_posture_async(name, state):
     try:
         payload = {"name": name, "state": state}
         
-        requests.post("https://awake-enterprise.onrender.com/update_posture", json=payload, timeout=5.0)
+        requests.post("http://127.0.0.1:8000/update_posture", json=payload, timeout=5.0)
     except Exception as e:
         print(f"Connection Error: {e}")
 
@@ -158,3 +158,4 @@ while cap.isOpened():
 
 cap.release()
 cv2.destroyAllWindows()
+
